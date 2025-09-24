@@ -12,8 +12,12 @@
     <div class="card">
       <div class="form">
         <div>
-          <label for="date">Fecha (YYYY-MM-DD)</label>
+          <label for="date">Fecha desde (YYYY-MM-DD)</label>
           <input id="date" type="date"/>
+        </div>
+        <div>
+          <label for="endDate">Fecha hasta (YYYY-MM-DD)</label>
+          <input id="endDate" type="date"/>
         </div>
         <div>
           <label>&nbsp;</label>
@@ -27,15 +31,20 @@
           <label>&nbsp;</label>
           <div id="status" class="status">Listo</div>
         </div>
-        <!-- 👇 Cambio aquí -->
         <input id="stationId" type="hidden" value="IALFAR32"/>
+      </div>
+
+      <div class="kpigrid">
+        <div class="kpi"><b>Obs. totales</b><span id="kpiCount">—</span></div>
+        <div class="kpi"><b>Temp. mín</b><span id="kpiMin">—</span></div>
+        <div class="kpi"><b>Temp. máx</b><span id="kpiMax">—</span></div>
       </div>
 
       <div class="table-shell">
         <table id="dataTable">
           <thead>
             <tr>
-              <th>Hora</th>
+              <th>Fecha y hora</th>
               <th>Precip (mm)</th>
               <th>Viento (km/h)</th>
               <th>Temp (°C)</th>
@@ -47,10 +56,8 @@
     </div>
   </main>
 
-  <!-- SheetJS for real .xlsx export -->
   <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
-
 
