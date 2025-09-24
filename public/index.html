@@ -1,151 +1,48 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Histórico — Hora, Lluvia, Viento, Temperatura</title>
-  <style>
-    :root { --bg:#0b0f14; --card:#121821; --ink:#e8eef7; --muted:#9fb0c6; --accent:#6ec1ff; --line:#223042; }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji";background:var(--bg);color:var(--ink)}
-    header{padding:16px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0b0f14,#0b0f14e0);position:sticky;top:0;z-index:5}
-    h1{margin:0;font-size:clamp(18px,3vw,24px);text-align:center}
-    .wrap{max-width:980px;margin:0 auto;padding:16px}
-    .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
-    .ctrls{display:grid;grid-template-columns:1fr 1fr auto auto;gap:10px;align-items:end}
-    label{font-size:12px;color:var(--muted)}
-    input,button,select{font:inherit;border:1px solid var(--line);background:#0f1621;color:var(--ink);padding:10px;border-radius:10px}
-    button{cursor:pointer}
-    table{width:100%;border-collapse:collapse;margin-top:14px}
-    thead th{position:sticky;top:0;background:#0f1621;border-bottom:1px solid var(--line);padding:10px;text-align:left}
-    tbody td{border-bottom:1px dashed #22304250;padding:10px}
-    .status{font-size:13px;color:var(--muted);margin-top:8px}
-  </style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>HISTORICO ALFARNATE</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <header><h1>Histórico — Hora · Lluvia · Viento · Temperatura</h1></header>
-  <div class="wrap">
+  <header><h1>HISTORICO ALFARNATE</h1></header>
+  <main class="wrap">
     <div class="card">
-      <div class="ctrls">
+      <div class="form">
+        <input id="station" type="hidden" value="IALFAR32"/>
         <div>
-          <label>Estación</label>
-          <input id="station" value="IALFAR32" />
+          <label for="date">Fecha (YYYY-MM-DD)</label>
+          <input id="date" type="date"/>
+        </div>
+        <div class="row">
+          <button class="primary" id="loadBtn">Cargar datos</button>
+          <button id="csvBtn">Exportar CSV</button>
+          <button id="xlsxBtn">Exportar Excel</button>
         </div>
         <div>
-          <label>Fecha</label>
-          <input id="date" type="date" />
+          <label></label>
+          <div id="status" style="padding:10px 12px;border:1px dashed #444;border-radius:10px;color:#aaa;">Listo</div>
         </div>
-        <button id="loadBtn">Cargar</button>
-        <button id="csvBtn">Exportar CSV</button>
       </div>
-      <div class="status" id="status">—</div>
 
-      <table id="dataTable">
-        <thead>
-          <tr>
-            <th>Hora</th>
-            <th>Lluvia (mm)</th>
-            <th>Viento (km/h)</th>
-            <th>Temperatura (°C)</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-shell">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>Precip (mm)</th>
+              <th>Viento (km/h)</th>
+              <th>Temp (°C)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
-  </div>
-
-<script>
-function toYYYYMMDD(d){ if(!d) return ""; return d.replaceAll("-",""); }
-function fmt(n, digits = 1){
-  if(n === null || n === undefined || Number.isNaN(Number(n))) return "—";
-  return Number(n).toFixed(digits);
-}
-function hhmm(isoOrEmpty){
-  if(!isoOrEmpty || typeof isoOrEmpty !== "string") return "";
-  if(isoOrEmpty.length >= 16) return isoOrEmpty.slice(11,16);
-  return isoOrEmpty;
-}
-function parseWU(json){
-  const arr = Array.isArray(json?.observations) ? json.observations
-            : Array.isArray(json) ? json : [];
-  return arr.map(o => {
-    const m = o.metric ?? o;
-    const tLocal = o.obsTimeLocal || o.obsTimeUtc || (o.epoch ? new Date(o.epoch*1000).toISOString() : "");
-    return {
-      hora: hhmm(tLocal),
-      lluvia: m?.precipRate ?? m?.precipTotal ?? m?.precip ?? null,
-      viento: m?.windSpeedAvg ?? m?.windspeedavg ?? m?.windSpeedHigh ?? m?.windgust ?? null,
-      temp: m?.tempAvg ?? m?.temp ?? m?.tempHigh ?? m?.tempLow ?? null
-    };
-  });
-}
-async function loadData(){
-  const status = document.getElementById("status");
-  const stationId = document.getElementById("station").value.trim();
-  const date = toYYYYMMDD(document.getElementById("date").value);
-  if(!stationId || !date){
-    status.textContent = "Completa estación y fecha.";
-    return;
-  }
-  status.textContent = "Cargando…";
-  try{
-    const url = new URL(location.origin + "/api/wu/history");
-    url.searchParams.set("stationId", stationId);
-    url.searchParams.set("date", date);
-    const r = await fetch(url);
-    const json = await r.json();
-    if(!r.ok) { status.textContent = "Error: " + (json?.error || r.statusText); return; }
-    const rows = parseWU(json);
-    const tbody = document.querySelector("#dataTable tbody");
-    tbody.innerHTML = "";
-    rows.forEach(row => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = \`
-        <td>\${row.hora || ""}</td>
-        <td>\${fmt(row.lluvia)}</td>
-        <td>\${fmt(row.viento)}</td>
-        <td>\${fmt(row.temp)}</td>
-      \`;
-      tbody.appendChild(tr);
-    });
-    status.textContent = \`OK — \${rows.length} registros\`;
-  }catch(e){
-    console.error(e);
-    status.textContent = "Error al cargar datos";
-  }
-}
-function escaparCSV(val){
-  const s = String(val ?? "");
-  const needsQuotes = /[;"\n]/.test(s);
-  const esc = s.replace(/"/g,'""');
-  return needsQuotes ? \`"\${esc}"\` : esc;
-}
-function exportCSV(){
-  const ths = Array.from(document.querySelectorAll("#dataTable thead th")).map(th => th.textContent.trim());
-  const trs = Array.from(document.querySelectorAll("#dataTable tbody tr"));
-  const lines = [ths.join(",")];
-  trs.forEach(tr => {
-    const cells = Array.from(tr.children).map(td => escaparCSV(td.textContent.trim()));
-    lines.push(cells.join(","));
-  });
-  const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
-  const a = document.createElement("a");
-  const today = new Date().toISOString().slice(0,10);
-  a.href = URL.createObjectURL(blob);
-  a.download = \`historico_\${today}.csv\`;
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-document.getElementById("loadBtn").addEventListener("click", loadData);
-document.getElementById("csvBtn").addEventListener("click", exportCSV);
-(function init(){
-  const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth()+1).padStart(2,'0');
-  const dd = String(d.getDate()).padStart(2,'0');
-  document.getElementById("date").value = \`\${yyyy}-\${mm}-\${dd}\`;
-})();
-</script>
+  </main>
+  <script src="./app.js"></script>
 </body>
 </html>
 
