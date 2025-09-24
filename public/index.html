@@ -30,12 +30,6 @@
         <input id="station" type="hidden" value="IALFAR32"/>
       </div>
 
-      <div class="kpis">
-        <div class="kpi">Obs. totales<b id="kpiCount">—</b></div>
-        <div class="kpi">Temp. mín<b id="kpiMin">—</b></div>
-        <div class="kpi">Temp. máx<b id="kpiMax">—</b></div>
-      </div>
-
       <div class="table-shell">
         <table id="dataTable">
           <thead>
@@ -51,6 +45,10 @@
       </div>
     </div>
   </main>
+
+  <!-- SheetJS for real .xlsx export -->
+  <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
+
