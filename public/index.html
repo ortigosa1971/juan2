@@ -52,8 +52,8 @@ tr:hover td { background:#0f1621; }
           <label>&nbsp;</label>
           <div class="row">
             <button class="primary" id="loadBtn">Cargar datos</button>
-            <button id="csvBtn">Exportar CSV</button>
-            <button id="xlsxBtn">Exportar Excel</button>
+            <button id="csvBtn" onclick="window.__alfarnate && window.__alfarnate.toCSV()">Exportar CSV</button>
+            <button id="xlsxBtn" onclick="window.__alfarnate && window.__alfarnate.toXLSX()">Exportar Excel</button>
           </div>
         </div>
         <div>
@@ -87,8 +87,9 @@ tr:hover td { background:#0f1621; }
 
   <script defer src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
-
 (function(){
+  function ready(fn){ if(document.readyState!='loading'){ fn(); } else { document.addEventListener('DOMContentLoaded', fn);} }
+  ready(function(){
   function toYYYYMMDD(d){ return d ? d.replace(/-/g,'') : ''; }
   function isNum(n){ return n!==null && n!==undefined && n!=='' && !isNaN(Number(n)); }
   function pick(){ for(var i=0;i<arguments.length;i++){ var v=arguments[i]; if(isNum(v)) return Number(v); } return null; }
@@ -190,9 +191,10 @@ tr:hover td { background:#0f1621; }
 
   // Exponer handlers
   window.__alfarnate={loadData, toCSV, toXLSX};
-  document.getElementById('loadBtn')?.addEventListener('click', loadData);
-  document.getElementById('csvBtn')?.addEventListener('click', toCSV);
-  document.getElementById('xlsxBtn')?.addEventListener('click', toXLSX);
+  var _l=document.getElementById('loadBtn'); if(_l) _l.addEventListener('click', loadData);
+  var _c=document.getElementById('csvBtn'); if(_c) _c.addEventListener('click', toCSV);
+  var _x=document.getElementById('xlsxBtn'); if(_x) _x.addEventListener('click', toXLSX);
+  });
 })();
 
 </script>
