@@ -1,9 +1,7 @@
-// app.js con rango de fechas
 (function(){
   function toYYYYMMDD(d){ return d ? d.replace(/-/g,'') : ''; }
   function isNum(n){ return n!==null && n!==undefined && !isNaN(Number(n)); }
   function fmt(n, digits){ if(!isNum(n)) return '—'; return Number(n).toFixed(digits||1); }
-  function hhmm(iso){ return (iso && iso.length>=16) ? iso.slice(11,16) : ''; }
   function pick(){ for(var i=0;i<arguments.length;i++){ var v=arguments[i]; if(isNum(v)) return v; } return null; }
   function parseWUResponse(json){
     var arr=[];
